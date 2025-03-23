@@ -1,0 +1,1 @@
+﻿global using MultiTenantExample2.Models.Interfaces;
