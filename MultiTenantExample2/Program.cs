@@ -9,6 +9,28 @@ builder.Services.Configure<TenantSettings>(builder.Configuration.GetSection(name
 TenantSettings options = new();
 builder.Configuration.GetSection(nameof(TenantSettings)).Bind(options);
 
+var defaultDbProvider = options.Defaults.DBProvider;
+
+if (defaultDbProvider?.ToLower() == "mssql")
+{
+    builder.Services.AddDbContext<ApplicationDbContext>(m => m.UseSqlServer());
+}
+
+foreach (var tenant in options.Tenants)
+{
+    var connectionString = tenant.ConnectionString?? options.Defaults.ConnectionString;
+
+    using var scope = builder.Services.BuildServiceProvider().CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    dbContext.Database.SetConnectionString(connectionString);
+
+    if (dbContext.Database.GetPendingMigrations().Any())
+    {
+        dbContext.Database.Migrate();
+    }
+}
+
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
