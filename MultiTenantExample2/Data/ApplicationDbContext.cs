@@ -4,12 +4,11 @@
     {
         public string TenantId { get; set; }
 
-        private readonly TenantService _tenantService;
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options, ITenantService tenantService) : base(options)
+        private readonly ITenantService _tenantService;
+        public ApplicationDbContext(DbContextOptions options, ITenantService tenantService) : base(options)
         {
-            _tenantService = (TenantService?)tenantService ?? throw new ArgumentNullException(nameof(tenantService));
-            TenantId = _tenantService.GetCurrentTenant()?.TId ?? string.Empty;
-            Products = Set<Product>();
+            _tenantService = tenantService;
+            TenantId = _tenantService.GetCurrentTenant()?.TId?? string.Empty;
         }
 
         public DbSet<Product> Products { get; set; }
@@ -22,20 +21,16 @@
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
-            var tenatnConnectionString = _tenantService.GetConnectionString();
+            var tenantConnectionString = _tenantService.GetConnectionString();
 
-            if (!string.IsNullOrEmpty(tenatnConnectionString))
+            if (!string.IsNullOrEmpty(tenantConnectionString))
             {
                 var dbProvider = _tenantService.GetDataBaseProvider();
 
                 if (dbProvider?.ToLower() == "mssql")
                 {
-                    optionsBuilder.UseSqlServer(tenatnConnectionString);
+                    optionsBuilder.UseSqlServer(tenantConnectionString);
                 }
-            }
-            else
-            {
-                throw new Exception("No Connection String Found");
             }
         }
 
@@ -43,10 +38,7 @@
         {
             foreach (var entry in ChangeTracker.Entries<IMustHaveTenant>().Where(e => e.State == EntityState.Added))
             {
-                if (entry.Entity is IMustHaveTenant entity)
-                {
-                    entity.TenantId = TenantId;
-                }
+                entry.Entity.TenantId = TenantId;                
             }
             return base.SaveChangesAsync(cancellationToken);
         }
