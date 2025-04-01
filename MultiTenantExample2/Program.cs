@@ -22,6 +22,11 @@ foreach (var tenant in options.Tenants)
 {
     var connectionString = tenant.ConnectionString?? options.Defaults.ConnectionString;
 
+    if (string.IsNullOrEmpty(connectionString))
+    {
+        throw new InvalidOperationException("The ConnectionString property has not been initialized.");
+    }
+
     using var scope = builder.Services.BuildServiceProvider().CreateScope();
     var dbContext = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
