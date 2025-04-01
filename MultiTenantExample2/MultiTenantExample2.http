@@ -1,10 +1,5 @@
 @host = http://localhost:5286
 
-GET {{MultiTenantExample2_HostAddress}}/weatherforecast/
-Accept: application/json
-
-###
-
 
 GET {{host}}/api/products
 tenant: CompanyWelDb
@@ -19,10 +14,11 @@ tenant: CompanyWelDb
 POST {{host}}/api/products
 tenant: CompanyWelDb
 Content-Type: application/json
+
 {
   "name": "Teclado HyperX RGB",
   "description": "Teclado mecânico com cores RGB",
-  "price": 780.00
+  "rate": 5
 }
 
 ###
