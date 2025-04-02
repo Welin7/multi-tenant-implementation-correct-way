@@ -1,1 +1,1 @@
-# multi-tenant-implementation-correct-way
+## Project designed to implement multi-tenant using a database for each tenant that corresponds to each database connection. When making requests in the methods in the product controller, the global filter is applied referencing the tenant, if it exists.
